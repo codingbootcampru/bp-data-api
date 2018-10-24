@@ -1,0 +1,42 @@
+{
+  "name": "bp-data-api",
+  "version": "1.0.0",
+  "description": "BP Data API",
+  "main": "src/server.js",
+  "repository": {
+  	"type": "git",
+  	"url": "https://github.com/codingbootcampru/bp-data-api"
+  },
+  "author": "Denis Moroz",
+  "license": "ISC",
+  "scripts": {
+  	"jest": "jest",
+  	"lint": "eslint . --ext .js,.jsx",
+  	"lint-fix": "eslint . --ext .js --fix",
+  	"build": "rimraf .build/ && babel ./src/server --out-dir .build/server/ --copy-files",
+  	"start": "PORT=3002 NODE_ENV=localhost APP_MOCKS=0 APP_MODE_DEV=1 nodemon --exec babel-node src/server/server --ignore src/client",
+  	"docker-build": "./docker-build.sh $npm_package_name $npm_package_version"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "hapi": "^17.6.0",
+    "mongoose": "^5.3.6"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^10.0.1",
+    "babel-loader": "^8.0.4",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "eslint": "^5.7.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-react": "^7.11.1",
+    "jest": "^23.6.0",
+    "nodemon": "^1.18.4",
+    "rimraf": "^2.6.2"
+  }
+}
