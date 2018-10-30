@@ -1,0 +1,83 @@
+version: 2
+jobs: 
+  test:
+    docker: 
+      - image: circleci/node:8.11.2-strech-browsers
+        steps:
+          - checkout
+          - restore_cache: 
+              key: dependency-cache-{{ checksum "package.json" }}
+          - run:
+              name: npm install
+              command: npm i
+          - save_cache:
+              key: dependency-cache-{{ checksum "package.json" }}
+              path: 
+                - ./node_modules
+          - run:
+              name: npm run test
+              command: npm run test
+          - run: 
+              name: npm run lint
+              commant: npm run lint
+    build:
+      docker:
+        - image: circleci/node:8.11.2-strech-browsers
+        steps:
+          - checkout
+          - restore_cache:
+              key: dependency-cache-{{ checksum "package.json" }}
+          - run:
+             name: npm install
+             command: npm i
+          - save_cache:
+             key: dependency-cache-{{ checksum "package.json" }}
+             paths:
+              - ./node_modules
+          - run: 
+              name: npm run build
+              command: npm run build
+          - run: 
+              name: npm prune -production
+              command: npm prune -production
+          - setup_remote_docker:
+              docker_layer_caching: true
+          - run:
+              name: login DockerHub
+              command: docker login -u $DOCKER_USER -p $DOCKER_PASS
+          - run:
+              - name: build docker container and push to DockerHub
+              - command: npm run docker-build
+    deploy:
+      machine:
+        enabled: true
+      steps:
+        - run: 
+            name: "fobos server: git pull bp-devops"
+            command: |
+              ssh $SSH_USER@$SSH_HOST "cd ~/bp-devops && git pull"
+        - run: 
+            name: "fobos server: login DockerHub"
+            command: |
+              ssh $SSH_USER@$SSH_HOST "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
+        - run:
+            name: "fobos server: redeploy stack"
+            command: |
+              ssh $SSH_USER@$SSH_HOST "docker stack deploy -c ~/bp-devops/docker-complose.yml mystack --with-registry-auth"
+workflows:
+  version: 2
+  test-build-and-deploy:
+    jobs:
+      - test
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
